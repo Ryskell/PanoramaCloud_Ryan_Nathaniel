@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Chat</h1>
+        <div id="chatbox">
+            <!-- Messages will be displayed here -->
+        </div>
+        <form id="chatForm">
+            <input type="text" id="message" name="message" placeholder="Tapez votre message ici..." required>
+            <input type="submit" value="Envoyer">
+        </form>
+        <button id="logoutButton">Déconnexion</button>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        var socket = io();
+
+        document.getElementById('chatForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var message = document.getElementById('message').value;
+            socket.emit('chat message', message);
+            document.getElementById('message').value = '';
+        });
+
+        socket.on('chat message', function(msg) {
+            var chatbox = document.getElementById('chatbox');
+            var messageElement = document.createElement('div');
+            var messageData = JSON.parse(msg);
+
+            messageElement.innerHTML = `<strong>${messageData.username}</strong>: ${messageData.text}`;
+            messageElement.classList.add('message');
+            if (messageData.username === 'System') {
+                messageElement.classList.add('system-message');
+            }
+
+            chatbox.appendChild(messageElement);
+            chatbox.scrollTop = chatbox.scrollHeight;
+        });
+
+        document.getElementById('logoutButton').addEventListener('click', function() {
+            localStorage.removeItem('username');
+            window.location.href = 'index.html';
+        });
+    </script>
+</body>
+</html>
